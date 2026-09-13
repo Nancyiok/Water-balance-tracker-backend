@@ -1,10 +1,10 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module.js';
+import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import cookieParcer from 'cookie-parser';
-import { HttpExceptionFilter } from './common/filters/http-exceptions.filter.js';
+import { HttpExceptionFilter } from './common/filters/http-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -33,4 +33,5 @@ async function bootstrap() {
   console.log(`App is running on http://localhost:${port}/api`);
   console.log(`Swagger docs at http://localhost:${port}/api/docs`);
 }
-await bootstrap();
+
+bootstrap();
