@@ -16,14 +16,32 @@ export class PrismaService
     const adapter = new PrismaPg({
       connectionString: process.env.DATABASE_URL,
     });
-
-    super({ adapter });
+    super({
+      adapter,
+      log: [
+        { emit: 'event', level: 'query' },
+        { emit: 'event', level: 'error' },
+        { emit: 'event', level: 'warn' },
+      ],
+    });
   }
 
   // When module starts, connect to database
   async onModuleInit() {
-    await this.$connect(); // Open database connection
-    console.log('Database connected');
+    // @ts-ignore
+    this.$on('error', (e: any) => console.error('🔴 Prisma error event:', e));
+    // @ts-ignore
+    this.$on('warn', (e: any) => console.warn('🟡 Prisma warn event:', e));
+    // @ts-ignore
+    this.$on('query', (e: any) => console.log('📝 Query:', e.query, e.params));
+
+    try {
+      await this.$connect();
+      console.log('Database connected');
+    } catch (error) {
+      console.error('Database connection failed:', error);
+      throw error;
+    }
   }
 
   // When module stops, disconnect from database

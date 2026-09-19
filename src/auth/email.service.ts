@@ -13,7 +13,7 @@ export class EmailService {
     const appUrl = this.configService.get<string>('APP_URL');
     const verificationUrl = `${appUrl}/api/auth/verify-email?token=${token}`;
     await this.resend.emails.send({
-      from: this.configService.get<string>('RESEND_FROM_EMAIL') ?? '',
+      from: this.configService.get<string>('RESEND_FROM_EMAIL') ?? 'onboarding@resend.dev',
       to: email,
       subject: 'Verify your email address',
       html: `<p>Please click the link below to verify your email address:</p><p><a href="${verificationUrl}">Verify Email</a></p>`,
@@ -24,7 +24,7 @@ export class EmailService {
     const appUrl = this.configService.get<string>('APP_URL');
     const verificationUrl = `${appUrl}/api/auth/reset-password?token=${token}`;
     await this.resend.emails.send({
-        from: this.configService.get<string>('RESEND_FROM_EMAIL') ?? '',
+        from: this.configService.get<string>('RESEND_FROM_EMAIL') ?? 'onboarding@resend.dev',
         to: email,
         subject: 'Reset your password',
         html: `<p>Please click the link below to reset your password:</p><p><a href="${verificationUrl}">Reset Password</a></p>`,

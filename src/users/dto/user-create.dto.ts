@@ -1,5 +1,5 @@
 import { IsEmail, IsString } from 'class-validator';
-import { ApiProverty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
   @IsEmail()

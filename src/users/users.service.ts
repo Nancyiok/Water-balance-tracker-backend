@@ -7,21 +7,30 @@ import { PrismaService } from '../prisma/prisma.service';
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createUserDto: CreateUserDto) {
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         email: createUserDto.email,
         name: createUserDto.name,
         passwordHash: createUserDto.passwordHash,
         verificationToken: createUserDto.verificationToken,
-        verificationExpiresAt: createUserDto.verificationExpiresAt,
+        verificationTokenExpiresAt: createUserDto.verificationExpiresAt,
       },
     });
+    return user;
   }
 
   async findByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: {
         email,
+      },
+    });
+  }
+
+  async findByResetToken(token: string) {
+    return this.prisma.user.findUnique({
+      where: {
+        verificationToken: token,
       },
     });
   }
@@ -51,9 +60,11 @@ export class UserService {
         name: updateUserDto.name,
         passwordHash: updateUserDto.passwordHash,
         refreshTokenHash: updateUserDto.refreshTokenHash,
+        isVerified: updateUserDto.isVerified,
+        verificationToken: updateUserDto.verificationToken,
+        verificationTokenExpiresAt: updateUserDto.verificationExpiresAt,
       },
     });
-
   }
 
   async remove(id: number) {

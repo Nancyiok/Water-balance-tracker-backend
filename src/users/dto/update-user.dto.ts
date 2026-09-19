@@ -7,4 +7,5 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   refreshTokenHash?: string | null;
   verificationToken?: string | null;
   verificationTokenExpiresAt?: Date | null;
+  isVerified?: boolean;
 }

@@ -6,19 +6,17 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
-import { UserService } from '../user/user.service';
+import { UserService } from '../users/users.service';
 import { EmailService } from './email.service';
 import { type RegisterDto } from './dto/register.dto';
 import { type LoginDto } from './dto/login.dto';
 import { type Response } from 'express';
-import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -33,12 +31,13 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(registerDto.password, 12);
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
-    const user = await this.userService.create({
+
+    await this.userService.create({
       email: registerDto.email,
       name: registerDto.name,
       passwordHash,
       verificationToken,
-      verificationExpiresAt,
+      verificationExpiresAt: verificationExpiresAt,
     });
 
     void this.emailService.sendVerificationEmail(
@@ -54,12 +53,18 @@ export class AuthService {
 
   async verifyEmail(token: string, res: Response) {
     const user = await this.userService.findByVerificationToken(token);
+    console.log(user?.id);
     if (!user || !user.verificationToken) {
       throw new BadRequestException('Invalid or expired verification token');
     }
 
-    if (user.verificationTokenExpiresAt && user.verificationTokenExpiresAt < new Date()) {
-      throw new BadRequestException('Verification token has expired. Please request a new one.');
+    if (
+      user.verificationTokenExpiresAt &&
+      user.verificationTokenExpiresAt < new Date()
+    ) {
+      throw new BadRequestException(
+        'Verification token has expired. Please request a new one.',
+      );
     }
 
     await this.userService.update(user.id, {
@@ -80,9 +85,8 @@ export class AuthService {
         email: user.email,
         name: user.name,
         role: user.role,
-      }
+      },
     };
-
   }
 
   async login(loginDto: LoginDto, res: Response) {
@@ -116,6 +120,19 @@ export class AuthService {
         role: user.role,
       },
     };
+  }
+
+  async forgotPassword(email: string) {
+    const user = this.userService.findByEmail(email);
+    if (!user) {
+      return {
+        message:
+          'If an account with this email exists, a reset link has been sent',
+      };
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    
   }
 
   async refresh(refreshToken: string, res: Response) {

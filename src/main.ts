@@ -5,9 +5,14 @@ import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import cookieParcer from 'cookie-parser';
 import { HttpExceptionFilter } from './common/filters/http-exceptions.filter';
+import { ConsoleLogger } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: new ConsoleLogger({
+      colors: false,
+    }),
+  });
   const configService = app.get(ConfigService);
   app.use(cookieParcer());
   app.setGlobalPrefix('api');
