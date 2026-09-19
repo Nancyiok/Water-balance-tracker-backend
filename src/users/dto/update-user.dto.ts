@@ -8,4 +8,6 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   verificationToken?: string | null;
   verificationTokenExpiresAt?: Date | null;
   isVerified?: boolean;
+  resetToken?: string | null;
+  resetTokenExpiresAt?: Date | null;
 }

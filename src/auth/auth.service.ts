@@ -123,7 +123,7 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
-    const user = this.userService.findByEmail(email);
+    const user = await this.userService.findByEmail(email);
     if (!user) {
       return {
         message:
@@ -131,8 +131,45 @@ export class AuthService {
       };
     }
 
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1hr
+    console.log(resetTokenExpiresAt)
+    await this.userService.update(user.id, {
+      resetToken,
+      resetTokenExpiresAt,
+    });
+    void this.emailService.sendPasswordResetEmail(user.email, resetToken);
+
+    return {
+      message:
+        'If an account with that email exists, a resent link has been sent',
+    };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const user = await this.userService.findByResetToken(token);
+    if (!user || !user.resetToken) {
+      throw new BadRequestException('Invalid reset token');
+    }
+    if (
+      user.verificationTokenExpiresAt &&
+      user.verificationTokenExpiresAt < new Date()
+    ) {
+      throw new BadRequestException(
+        'Reset token expired. Please request a new one',
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    this.userService.update(user.id, {
+      passwordHash,
+      resetToken: null,
+      verificationTokenExpiresAt: null,
+    });
+
+    return {
+      message: 'Password reset succesfully. You can now login',
+    };
   }
 
   async refresh(refreshToken: string, res: Response) {

@@ -30,7 +30,7 @@ export class UserService {
   async findByResetToken(token: string) {
     return this.prisma.user.findUnique({
       where: {
-        verificationToken: token,
+        resetToken: token,
       },
     });
   }
@@ -57,12 +57,7 @@ export class UserService {
         id,
       },
       data: {
-        name: updateUserDto.name,
-        passwordHash: updateUserDto.passwordHash,
-        refreshTokenHash: updateUserDto.refreshTokenHash,
-        isVerified: updateUserDto.isVerified,
-        verificationToken: updateUserDto.verificationToken,
-        verificationTokenExpiresAt: updateUserDto.verificationExpiresAt,
+        ...updateUserDto
       },
     });
   }
